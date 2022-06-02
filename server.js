@@ -22,12 +22,17 @@ io.on('connection', (socket) => {
 )})
 
 
+
 // EJS setup
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
 app.use(cors({
-  origin: 'https://3001-peers-peerjsserver-iokstn1x4gt.ws-us46.gitpod.io'
+  origin: 'http://c1df-49-36-95-9.ngrok.io'
 }))
+
+// app.use(cors({
+//   origin: "*"
+// }))
 
 //Routes Setup
 app.get('/', (req, res) => {

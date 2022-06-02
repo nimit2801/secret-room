@@ -2,21 +2,26 @@ const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined,   {
     secure: true,
-    host: "3001-peers-peerjsserver-iokstn1x4gt.ws-us46.gitpod.io",
-    port: '443',
-    config: {'iceServers': [
-        { url: 'stun:stun.l.google.com:19302' },
-        { url: 'turn:homeo@turn.bistri.com:80', credential: 'homeo' }
-    ]} /* Sample servers, please use appropriate ones */
+    // host: '/', // when running on localhost
+    // port: '3001' // when running on localhost
+    host: "c1df-49-36-95-9.ngrok.io", // when running on peer on server
+    port: '443', // when running on peer on server
+ 
 })
 
+// const callme = async() => {
+
+//     let a = await fetch('https://jsonplaceholder.typicode.com/todos/1')
+//     console.log(await a.json())
+// }
+// callme()
 
 const myVideo = document.createElement('video')
-myVideo.mute = true
-myVideo.onClick = () => {
-    console.log("clicked")
-}
+myVideo.muted = true
+console.log(myVideo.outerHTML)
+
 const peers = {}
+
 navigator.mediaDevices.getUserMedia({
     video: true,
     audio: true,
@@ -72,4 +77,13 @@ function addVideoStream(video, stream) {
     })
     videoGrid.appendChild(video)
     console.log("playing your video now!")
+}
+
+function createButton(myVideo){
+    const myButton = document.createElement('button')
+    myButton.textContent = "unmute"
+    if(myVideo){
+        myButton.onClick = () => { 
+            myVideo.muted = false
+    }}    
 }
