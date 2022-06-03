@@ -1,10 +1,11 @@
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined,   {
-    secure: true,
-    // host: '/', // when running on localhost
-    // port: '3001' // when running on localhost
-    host: "c1df-49-36-95-9.ngrok.io", // when running on peer on server
+    secure: true,    
+    host: '/', // when running on localhost
+    path: '/api/peerjs',
+    // port: '3000' // when running on localhost
+    // host: "325a-8-34-69-70.ngrok.io", // when running on peer on server
     port: '443', // when running on peer on server
  
 })
