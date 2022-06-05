@@ -32,6 +32,7 @@ navigator.mediaDevices.getUserMedia({
     myPeer.on('call', call => {
         call.answer(stream)
         const video = document.createElement('video')
+        // This sends our video on second users browser
         call.on('stream', userVideoStream => {
             addVideoStream(video, userVideoStream)
         })
@@ -61,6 +62,7 @@ function connectToNewUser(userId, stream) {
     
     const call = myPeer.call(userId, stream)
     const video = document.createElement('video')
+    // This adds second users video on out browser
     call.on('stream', userVideoStream => {
         addVideoStream(video, userVideoStream)
     })

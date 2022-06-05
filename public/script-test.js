@@ -1,22 +1,38 @@
 import './constraints.js'
+const socket = io('/')
 console.log("in development!")
 const videoGrid = document.getElementById('video-grid')
-let showBtn = document.getElementById("show-btn")
+const showBtn = document.getElementById("show-btn")
 const audioSelect = document.querySelector("select#audioSource");
 const videoSelect = document.querySelector("select#videoSource");
 const changeQuality = document.querySelector("select#changeQuality");
 console.log(showBtn)
 showBtn.addEventListener("click", getStream)
-let stopButton = document.getElementById("stop-btn")
-stopButton.addEventListener("click", stopTrack)
+const stopBtn = document.getElementById("stop-btn")
+const callBtn = document.getElementById("call-btn")
+stopBtn.addEventListener("click", stopTrack)
+callBtn.addEventListener("click", callPeer)
 const myVideo = document.createElement('video')
 myVideo.muted = true
 console.log(myVideo.outerHTML)
 let resolution_ = "vgaConstraints"
+// Get permission from user to get its devices
 getForcePermissions()
-// getStream()
-// devicesavailable()
-// navigator.mediaDevices.getUserMedia()
+
+const peers = {}
+const myPeer = new Peer(undefined,   {
+    secure: true,    
+    host: '/', // when running on localhost
+    path: '/api/peerjs',
+    // port: '3000' // when running on localhost
+    // host: "325a-8-34-69-70.ngrok.io", // when running on peer on server
+    port: '443', // when running on peer on server
+})
+
+// myPeer.on('open', id => {
+    // socket.emit('join-room', "Development", id)
+// })
+
 async function devicesavailable() {
     let deviceInfos = await navigator.mediaDevices.enumerateDevices()
     // console.log("devides: "  + deviceInfos)
@@ -27,14 +43,14 @@ async function devicesavailable() {
             audioOption.value = element.deviceId
             audioOption.text = element.label
             audioSelect.appendChild(audioOption)
-            console.log(element);
+            // console.log(element);
         }
         else if(element.kind === "videoinput"){
             const videoOption = document.createElement("option")
             videoOption.value = element.deviceId
             videoOption.text = element.label
             videoSelect.appendChild(videoOption)
-            console.log(element);
+            // console.log(element);
         }
     }
 }
@@ -106,13 +122,27 @@ try{
 }
 
 async function gotStream(stream){
-    window.stream = stream
-    myVideo.srcObject = stream
-    stream.onremovetrack = (event) => {
-        console.log(`${event.track.kind} track removed`);
-      };
-    myVideo.play()
-    videoGrid.appendChild(myVideo)
+    addVideoStream(myVideo, stream)
+    socket.emit('join-room', "Development", myPeer.id)
+    myPeer.on('call', call => {
+        call.answer(stream)
+        const video = document.createElement('video')
+        // This sends our video on second users browser
+        call.on('stream', userVideoStream => {
+            console.log("User call incoming!")
+            addVideoStream(video, userVideoStream)
+        })
+    })
+    socket.on('user-connected', userId => {
+        // console.log('User Connected ' + userId)
+        connectToNewUser(userId, stream)
+    })
+    // myVideo.srcObject = stream
+    // stream.onremovetrack = (event) => {
+    //     console.log(`${event.track.kind} track removed`);
+    //   };
+    // myVideo.play()
+    // videoGrid.appendChild(myVideo)
 }
 
 async function stopTrack(){
@@ -134,3 +164,46 @@ async function getForcePermissions(){
         devicesavailable()
     })
 }
+
+async function callPeer(){
+    console.log(myPeer.id)
+}
+
+function addVideoStream(video, stream) {
+    window.stream = stream
+    video.srcObject = stream
+    video.addEventListener('loadedmetadata', () => {
+        video.play()
+    })
+    stream.onremovetrack = (event) => {
+        console.log(`${event.track.kind} track removed`);
+    };
+    videoGrid.appendChild(video)
+    console.log("Added video now!")
+}
+
+function connectToNewUser(userId, stream) {
+    console.log('User Connected ' + userId)
+    
+    const call = myPeer.call(userId, stream)
+    const video = document.createElement('video')
+    // This adds second users video on out browser
+    call.on('stream', userVideoStream => {
+        addVideoStream(video, userVideoStream)
+    })
+    call.on('close', () => {
+        video.remove()
+    })
+
+    peers[userId] = call
+}
+
+// // Socket Events
+socket.on('user-connected', userId => {
+    console.log('User Connected ' + userId)
+})
+
+socket.on('user-disconnected', userId => {
+    console.log("user disconnected: " + userId)
+    if(peers[userId])  peers[userId].close()
+})
