@@ -1,12 +1,23 @@
-const express = require('express');
+// const express = require('express');
+import express from 'express'
 const app = express();
-const {ExpressPeerServer} = require('peer')
-const http = require('http');
-const cors = require('cors');
-const {v4: uuidV4} = require('uuid')
+// const {ExpressPeerServer} = require('peer')
+import { ExpressPeerServer } from 'peer';
+// const http = require('http');
+import http from 'http';
+// const cors = require('cors');
+import cors from 'cors'
+// const {v4: uuidV4} = require('uuid')
+import {v4} from 'uuid'
 const server = http.createServer(app);
-const { Server } = require("socket.io")
+// const { Server } = require("socket.io")
+import {Server} from 'socket.io'
+// const morgan = require('morgan')
+import morgan from 'morgan'
 const io = new Server(server);
+// const chalk = require('chalk')
+import chalk from 'chalk'
+
 
 // Socket Connection and logic
 io.on('connection', (socket) => {
@@ -28,10 +39,12 @@ app.use(express.static('public'))
 app.use(cors({
   origin: 'https://325a-8-34-69-70.ngrok.io'
 }))
+app.use(morgan(chalk.green(':method :http-version :url :status :response-time ms :user-agent')))
+
 
 // Routes Setup
 app.get('/', (req, res) => {
-  res.redirect(`/${uuidV4()}`)
+  res.redirect(`/${v4()}`)
 });
 
 app.get('/:room', (req, res) => {
@@ -39,7 +52,7 @@ app.get('/:room', (req, res) => {
 })
 
 server.listen(3000, () => {
-  console.log('listening on http://localhost:3000');
+  console.log(chalk.yellow('listening on http://localhost:3000'));
 });
 
 // Integrate peerjs
