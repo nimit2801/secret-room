@@ -1,7 +1,5 @@
+import './constraints.js'
 console.log("in development!")
-
-
-devicesavailable()
 const videoGrid = document.getElementById('video-grid')
 let showBtn = document.getElementById("show-btn")
 const audioSelect = document.querySelector("select#audioSource");
@@ -15,10 +13,13 @@ const myVideo = document.createElement('video')
 myVideo.muted = true
 console.log(myVideo.outerHTML)
 let resolution_ = "vgaConstraints"
-
+getForcePermissions()
+// getStream()
+// devicesavailable()
 // navigator.mediaDevices.getUserMedia()
 async function devicesavailable() {
     let deviceInfos = await navigator.mediaDevices.enumerateDevices()
+    // console.log("devides: "  + deviceInfos)
     for (let i = 0; i < deviceInfos.length; i++) {
         let element = deviceInfos[i];
         if(element.kind === "audioinput"){
@@ -26,14 +27,14 @@ async function devicesavailable() {
             audioOption.value = element.deviceId
             audioOption.text = element.label
             audioSelect.appendChild(audioOption)
-            // console.log(element);
+            console.log(element);
         }
         else if(element.kind === "videoinput"){
             const videoOption = document.createElement("option")
             videoOption.value = element.deviceId
             videoOption.text = element.label
             videoSelect.appendChild(videoOption)
-            // console.log(element);
+            console.log(element);
         }
     }
 }
@@ -74,8 +75,8 @@ async function getStream(){
     }
 
     const fullHdConstraints = {
-        width: {exact: 1920}, 
-        height: {exact: 1080},
+        width: {exact: 3840}, 
+        height: {exact: 2160},
         deviceId: {exact: videoSelect.value}
     }
 
@@ -95,8 +96,12 @@ async function getStream(){
     console.log(`resoltion changed to: ${qualityFlag[resolution_].width.exact}`)
 
 
+try{
     let stream = await navigator.mediaDevices.getUserMedia(constraints)
     gotStream(stream)
+}catch(e){
+    console.error("error here: " + e)
+}
     // myVideo.srcObject = stream
 }
 
@@ -118,4 +123,14 @@ async function stopTrack(){
         track.stop()
     })
     window.stream = stream
+}
+
+async function getForcePermissions(){
+    console.log("inside this function")
+    navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true
+    }).then(() => {
+        devicesavailable()
+    })
 }

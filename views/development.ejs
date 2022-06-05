@@ -8,8 +8,8 @@
     <style>
         #video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, 1500px);
-            grid-auto-rows: 700px;
+            grid-template-columns: repeat(auto-fill, 300px);
+            grid-auto-rows: 300px;
         }
 
         video{
@@ -23,9 +23,11 @@
     <select id="audioSource" name="audioSource"></select>
     <select id="videoSource" name="videoSource"></select>
     <select id="changeQuality" name="changeQuality"></select>
-    <div id="video-grid"></div>
+    <br />    
     <button id="show-btn">Play Video</button>
     <button id="stop-btn">Stop Video</button>
+    
+    <div id="video-grid"></div>
 </body>
-<script src="/script-test.js" defer></script>
+<script type="module" src="/script-test.js" defer></script>
 </html>
