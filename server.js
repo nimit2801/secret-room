@@ -51,6 +51,10 @@ app.get('/:room', (req, res) => {
   res.render('room', {roomId: req.params.room})
 })
 
+app.get('/test/development', (req, res) => {
+  res.render('development')
+})
+
 server.listen(3000, () => {
   console.log(chalk.yellow('listening on http://localhost:3000'));
 });
