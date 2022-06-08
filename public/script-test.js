@@ -12,21 +12,24 @@ const stopBtn = document.getElementById("stop-btn")
 const callBtn = document.getElementById("call-btn")
 stopBtn.addEventListener("click", stopTrack)
 callBtn.addEventListener("click", callPeer)
-const myVideo = document.createElement('video')
+let myVideo = document.createElement('video')
 myVideo.muted = true
 console.log(myVideo.outerHTML)
 let resolution_ = "vgaConstraints"
 // Get permission from user to get its devices
 getForcePermissions()
 
-const peers = {}
+let peers = {
+    "test": "working"
+}
+
 const myPeer = new Peer(undefined,   {
-    secure: true,    
+    // secure: true,    
     host: '/', // when running on localhost
     path: '/api/peerjs',
-    // port: '3000' // when running on localhost
+    port: '3000' // when running on localhost
     // host: "325a-8-34-69-70.ngrok.io", // when running on peer on server
-    port: '443', // when running on peer on server
+    // port: '443', // when running on peer on server
 })
 
 // myPeer.on('open', id => {
@@ -130,7 +133,7 @@ async function gotStream(stream){
         // This sends our video on second users browser
         call.on('stream', userVideoStream => {
             console.log("User call incoming!")
-            addVideoStream(video, userVideoStream)
+            addVideoStream(video, userVideoStream, 1)
         })
     })
     socket.on('user-connected', userId => {
@@ -146,13 +149,25 @@ async function gotStream(stream){
 }
 
 async function stopTrack(){
-    let tracks = await stream.getTracks()
-    // // console.log(tracks)
-    tracks.forEach(track => {
-        console.log(`stopping ${track.kind}`)
-        track.stop()
-    })
-    window.stream = stream
+    if(stopBtn.textContent == "Resume Video"){
+        console.log("in resume!")
+        let tracks = await stream.getTracks()
+        // // console.log(tracks)
+        tracks.forEach(track => {
+            console.log(`stopping ${track.kind}`)
+            track.stop()
+        })
+        window.stream = stream
+    }else{
+        let tracks = await stream.getTracks()
+        // // console.log(tracks)
+        tracks.forEach(track => {
+            console.log(`stopping ${track.kind}`)
+            track.stop()
+        })
+        window.stream = stream
+        stopBtn.textContent = "Resume Video"
+    }
 }
 
 async function getForcePermissions(){
@@ -167,10 +182,20 @@ async function getForcePermissions(){
 
 async function callPeer(){
     console.log(myPeer.id)
+    console.log(peers.test)
 }
 
-function addVideoStream(video, stream) {
-    window.stream = stream
+
+function addVideoStream(video, stream, flag=0) {
+    if(flag == 0) {
+        window.stream = stream
+        myVideo = video
+    }
+    else if (flag > 0) {
+        console.log("adding user stream")
+        window.userStream == stream
+        video.id = "new-user"
+    }
     video.srcObject = stream
     video.addEventListener('loadedmetadata', () => {
         video.play()
@@ -178,24 +203,32 @@ function addVideoStream(video, stream) {
     stream.onremovetrack = (event) => {
         console.log(`${event.track.kind} track removed`);
     };
-    videoGrid.appendChild(video)
+    if((video.id != "my-video" && flag == 0) || flag == 1) {
+        console.log(video.id, flag)
+        videoGrid.appendChild(video)
+        video.id = "my-video"
+    }
+    else{
+        let video_ = videoGrid.childNodes[0]
+        video_.srcObject = stream
+    }
     console.log("Added video now!")
 }
 
 function connectToNewUser(userId, stream) {
-    console.log('User Connected ' + userId)
     
     const call = myPeer.call(userId, stream)
     const video = document.createElement('video')
     // This adds second users video on out browser
     call.on('stream', userVideoStream => {
-        addVideoStream(video, userVideoStream)
+        addVideoStream(video, userVideoStream, 1)
     })
     call.on('close', () => {
         video.remove()
     })
 
     peers[userId] = call
+    console.log(peers[userId].peer, " joined us")
 }
 
 // // Socket Events
