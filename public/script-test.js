@@ -27,9 +27,9 @@ const myPeer = new Peer(undefined,   {
     // secure: true,    
     host: '/', // when running on localhost
     path: '/api/peerjs',
-    port: '3000' // when running on localhost
+    // port: '3000' // when running on localhost
     // host: "325a-8-34-69-70.ngrok.io", // when running on peer on server
-    // port: '443', // when running on peer on server
+    port: '443', // when running on peer on server
 })
 
 // myPeer.on('open', id => {
@@ -127,7 +127,10 @@ try{
 async function gotStream(stream){
     addVideoStream(myVideo, stream)
     socket.emit('join-room', "Development", myPeer.id)
+
+    // this helps the second user to recieve the call
     myPeer.on('call', call => {
+        console.log("New call generated")
         call.answer(stream)
         const video = document.createElement('video')
         // This sends our video on second users browser
@@ -203,26 +206,31 @@ function addVideoStream(video, stream, flag=0) {
     stream.onremovetrack = (event) => {
         console.log(`${event.track.kind} track removed`);
     };
-    if((video.id != "my-video" && flag == 0) || flag == 1) {
-        console.log(video.id, flag)
+    // Adds if video my-video is adding for the first time or 
+    // user video is getting added
+    if((videoGrid.childNodes.length == 0 && flag == 0) || flag == 1) {
+        // console.log(video.id, flag)
         videoGrid.appendChild(video)
         video.id = "my-video"
+        console.log("added my video")
     }
     else{
         let video_ = videoGrid.childNodes[0]
         video_.srcObject = stream
+        console.log("added user video")
     }
     console.log("Added video now!")
 }
 
-function connectToNewUser(userId, stream) {
+async function connectToNewUser(userId, stream) {
     
-    const call = myPeer.call(userId, stream)
+    const call = await myPeer.call(userId, stream)
     const video = document.createElement('video')
-    // This adds second users video on out browser
     call.on('stream', userVideoStream => {
+        // This adds second users video on our browser
         addVideoStream(video, userVideoStream, 1)
     })
+    console.log(await call.metadata)
     call.on('close', () => {
         video.remove()
     })
