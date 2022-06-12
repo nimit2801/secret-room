@@ -1,21 +1,13 @@
-// const express = require('express');
 import express from 'express'
 const app = express();
-// const {ExpressPeerServer} = require('peer')
 import { ExpressPeerServer } from 'peer';
-// const http = require('http');
 import http from 'http';
-// const cors = require('cors');
 import cors from 'cors'
-// const {v4: uuidV4} = require('uuid')
 import {v4} from 'uuid'
 const server = http.createServer(app);
-// const { Server } = require("socket.io")
 import {Server} from 'socket.io'
-// const morgan = require('morgan')
 import morgan from 'morgan'
 const io = new Server(server);
-// const chalk = require('chalk')
 import chalk from 'chalk'
 
 
@@ -49,6 +41,10 @@ app.get('/', (req, res) => {
 
 app.get('/:room', (req, res) => {
   res.render('room', {roomId: req.params.room})
+})
+
+app.get('/test/development', (req, res) => {
+  res.render('development')
 })
 
 server.listen(3000, () => {
